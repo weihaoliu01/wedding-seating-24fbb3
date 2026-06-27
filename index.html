@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#7a6a53">
+<title>Find Your Table</title>
+<style>
+  :root{
+    --bg:#f7f2ea;
+    --card:#fffdf9;
+    --ink:#3d3528;
+    --muted:#9b8f7c;
+    --gold:#b08d57;
+    --gold-soft:#e7d9bf;
+    --line:#ece3d4;
+    --accent:#7a6a53;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #fffdf8 0%, rgba(255,253,248,0) 60%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    justify-content:center;
+    padding:24px 18px 60px;
+  }
+  .wrap{width:100%;max-width:520px;}
+
+  header{text-align:center;margin:18px 0 22px;}
+  .eyebrow{
+    letter-spacing:.32em;text-transform:uppercase;font-size:11px;
+    color:var(--gold);font-weight:600;margin-bottom:10px;
+  }
+  h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-weight:400;font-size:34px;line-height:1.15;margin:0;
+    color:var(--accent);
+  }
+  h1 .amp{color:var(--gold);font-style:italic;}
+  .sub{color:var(--muted);font-size:14px;margin-top:10px;}
+  .rule{
+    width:54px;height:1px;background:var(--gold-soft);
+    margin:16px auto 0;position:relative;
+  }
+  .rule::before{
+    content:"\2766";position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+    color:var(--gold);font-size:16px;background:var(--bg);padding:0 8px;
+  }
+
+  .search{
+    position:relative;margin:8px 0 18px;
+  }
+  .search input{
+    width:100%;font-size:18px;padding:16px 46px 16px 18px;
+    border:1px solid var(--line);border-radius:14px;background:var(--card);
+    color:var(--ink);outline:none;box-shadow:0 6px 18px rgba(122,106,83,.06);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .search input:focus{border-color:var(--gold);box-shadow:0 6px 22px rgba(176,141,87,.15);}
+  .search input::placeholder{color:#c3b8a4;}
+  .search .clear{
+    position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    border:none;background:transparent;color:var(--muted);font-size:22px;
+    width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;
+  }
+  .search .clear:active{background:#f0e8da;}
+
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin:-6px 0 18px;}
+
+  .results{display:flex;flex-direction:column;gap:10px;}
+  .guest{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;cursor:pointer;
+    transition:transform .08s, border-color .15s, box-shadow .15s;
+  }
+  .guest:active{transform:scale(.99);}
+  .guest:hover{border-color:var(--gold-soft);box-shadow:0 6px 16px rgba(122,106,83,.07);}
+  .guest .name{font-size:17px;font-weight:600;}
+  .guest .name small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:2px;}
+  .badge{
+    flex:none;min-width:58px;text-align:center;
+    background:linear-gradient(180deg,#fbf4e6,#f3e7cd);
+    border:1px solid var(--gold-soft);border-radius:10px;
+    padding:8px 10px;color:var(--accent);
+  }
+  .badge .t{display:block;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);}
+  .badge .n{display:block;font-size:20px;font-weight:700;line-height:1.1;}
+
+  .empty{text-align:center;color:var(--muted);padding:34px 10px;font-size:15px;}
+  .empty .big{font-size:40px;display:block;margin-bottom:10px;opacity:.5;}
+
+  /* Big reveal overlay */
+  .overlay{
+    position:fixed;inset:0;background:rgba(61,53,40,.55);
+    backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;padding:24px;z-index:50;
+  }
+  .overlay.show{display:flex;animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .reveal{
+    background:var(--card);border-radius:22px;width:100%;max-width:380px;
+    padding:34px 28px 28px;text-align:center;position:relative;
+    box-shadow:0 24px 60px rgba(0,0,0,.25);border:1px solid var(--gold-soft);
+    animation:pop .25s cubic-bezier(.2,.9,.3,1.2);
+  }
+  @keyframes pop{from{transform:scale(.9);opacity:.4}to{transform:scale(1);opacity:1}}
+  .reveal .close{
+    position:absolute;top:12px;right:14px;border:none;background:transparent;
+    font-size:26px;color:var(--muted);cursor:pointer;line-height:1;
+  }
+  .reveal .gname{font-size:22px;font-weight:600;margin:2px 0 4px;}
+  .reveal .gsub{color:var(--muted);font-size:13.5px;margin-bottom:22px;}
+  .reveal .tlabel{letter-spacing:.3em;text-transform:uppercase;font-size:12px;color:var(--gold);}
+  .reveal .tnum{
+    font-family:Georgia,serif;font-size:96px;line-height:1;color:var(--accent);
+    margin:6px 0 4px;font-weight:400;
+  }
+  .reveal .welcome{color:var(--muted);font-size:13px;margin-top:14px;}
+
+  footer{text-align:center;color:#c8bca8;font-size:11px;margin-top:34px;letter-spacing:.05em;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">Welcome &middot; 欢迎</div>
+      <h1>Find Your Table</h1>
+      <div class="sub">Type your first or last name &middot; 请输入您的姓或名</div>
+      <div class="rule"></div>
+    </header>
+
+    <div class="search">
+      <input id="q" type="text" inputmode="search" autocomplete="off" autocapitalize="words"
+             placeholder="Start typing your name…" aria-label="Search your name">
+      <button class="clear" id="clear" aria-label="Clear">&times;</button>
+    </div>
+
+    <div id="results" class="results"></div>
+
+    <footer>Tap your name to see your table</footer>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="reveal">
+      <button class="close" id="close" aria-label="Close">&times;</button>
+      <div class="gname" id="rName"></div>
+      <div class="gsub" id="rSub"></div>
+      <div class="tlabel">Table &middot; 桌号</div>
+      <div class="tnum" id="rNum"></div>
+      <div class="welcome">We're so glad you're here 💛</div>
+    </div>
+  </div>
+
+<script>
+/* ---- Guest data: first (f), last (l), table (t) ---- */
+const GUESTS = [{"f":"Danny","l":"","t":"1"},{"f":"Xiongqi","l":"Cheng","t":"1"},{"f":"Yitong (Liz)","l":"Gao","t":"1"},{"f":"Wendong","l":"Huang","t":"1"},{"f":"Angela","l":"Kong","t":"1"},{"f":"Xiang Cheng","l":"Kong","t":"1"},{"f":"Nancy","l":"Long","t":"1"},{"f":"Dan (Mingjun)","l":"Lu","t":"1"},{"f":"Rongjing","l":"Xu","t":"1"},{"f":"Simon","l":"Zuo","t":"1"},{"f":"Alice","l":"Chen","t":"2"},{"f":"Maggy","l":"Chin","t":"2"},{"f":"Xinyuan","l":"Du","t":"2"},{"f":"Ana","l":"Li","t":"2"},{"f":"Lynne","l":"Li","t":"2"},{"f":"Jeanne","l":"Lu","t":"2"},{"f":"Cindy","l":"So","t":"2"},{"f":"Yanying (Luna)","l":"Zhang","t":"2"},{"f":"Tammy","l":"Zhen","t":"2"},{"f":"Matthew","l":"Zhu","t":"2"},{"f":"Brenda","l":"Chen","t":"3"},{"f":"Doris","l":"Chen","t":"3"},{"f":"Olivia","l":"Chen","t":"3"},{"f":"Richard","l":"Chen","t":"3"},{"f":"Chunhui","l":"Li","t":"3"},{"f":"Xuerong","l":"Li","t":"3"},{"f":"Haowen","l":"Lu","t":"3"},{"f":"Guocai","l":"Wang","t":"3"},{"f":"Jun Ling","l":"Wang","t":"3"},{"f":"William","l":"Wang","t":"3"},{"f":"Anqi","l":"Chen","t":"4"},{"f":"Jiayan","l":"Gu","t":"4"},{"f":"Yici","l":"Li","t":"4"},{"f":"Xiongjian","l":"Sima","t":"4"},{"f":"Qing","l":"Wang","t":"4"},{"f":"Zhi","l":"Wang","t":"4"},{"f":"Wenning","l":"Wu","t":"4"},{"f":"Ziang","l":"Xu","t":"4"},{"f":"Yutong","l":"Zhang","t":"4"},{"f":"Fangzhou","l":"Zhao","t":"4"},{"f":"DJ 2","l":"","t":"5"},{"f":"Photobooth Vendor","l":"","t":"5"},{"f":"Shaoyu","l":"Ba","t":"5"},{"f":"Isabelle","l":"Bernier","t":"5"},{"f":"Raymond","l":"Chan","t":"5"},{"f":"Weichi","l":"Chang","t":"5"},{"f":"Zefeng","l":"Ge","t":"5"},{"f":"Yizhou","l":"Liu","t":"5"},{"f":"Qing","l":"Tian","t":"5"},{"f":"Yao","l":"Wang","t":"5"},{"f":"Xiao Ling","l":"Jing","t":"6"},{"f":"Xiliang","l":"Lu","t":"6"},{"f":"Yingyuan","l":"Lu","t":"6"},{"f":"Yufan","l":"Lu","t":"6"},{"f":"Yuan","l":"Ma","t":"6"},{"f":"Yufeng","l":"Qian","t":"6"},{"f":"Ziyan","l":"Qian","t":"6"},{"f":"Lilian","l":"Yan","t":"6"},{"f":"Lucia","l":"Yan","t":"6"},{"f":"Hao","l":"Yang","t":"6"},{"f":"Bo","l":"Jiao","t":"7"},{"f":"Chen","l":"Lu","t":"7"},{"f":"Enhui","l":"Lu","t":"7"},{"f":"Tudou","l":"Lu","t":"7"},{"f":"Wumo","l":"Pan","t":"7"},{"f":"Evan","l":"Wang","t":"7"},{"f":"Nicole","l":"Wang","t":"7"},{"f":"Qian","l":"Wang","t":"7"},{"f":"Shuang","l":"Yan","t":"7"},{"f":"Ruiting","l":"Zhu","t":"7"},{"f":"Qing Wei","l":"Li","t":"8"},{"f":"Bin","l":"Ouyang","t":"8"},{"f":"Tingfeng","l":"Ouyang","t":"8"},{"f":"David","l":"Tan","t":"8"},{"f":"Yu Song","l":"Tan","t":"8"},{"f":"Yun Tao","l":"Tan","t":"8"},{"f":"Zhan Song","l":"Wu","t":"8"},{"f":"Meihua","l":"Ye","t":"8"},{"f":"Xue Wei","l":"Zhang","t":"8"},{"f":"Youqin","l":"Zheng","t":"8"},{"f":"韩太太","l":"","t":"9"},{"f":"Zhiming","l":"Cai","t":"9"},{"f":"Kwei Jen","l":"Chang","t":"9"},{"f":"Apollo 韩长老","l":"Han","t":"9"},{"f":"Zhi","l":"Liang","t":"9"},{"f":"李师母","l":"Mrs. Lee","t":"9"},{"f":"李牧师（韩国）","l":"Pastor Lee","t":"9"},{"f":"Belinda","l":"Tong","t":"9"},{"f":"Jiajun","l":"Wang","t":"9"},{"f":"Min Sea","l":"Wu","t":"9"},{"f":"Grace","l":"He","t":"10"},{"f":"Huaxing","l":"He","t":"10"},{"f":"Jessica","l":"He","t":"10"},{"f":"Kelong","l":"He","t":"10"},{"f":"Liang","l":"He","t":"10"},{"f":"Lindsay","l":"He","t":"10"},{"f":"Selina","l":"He","t":"10"},{"f":"Victor","l":"He","t":"10"},{"f":"Huaxing2 (Aning)","l":"He2","t":"10"},{"f":"Yunfang","l":"Shi","t":"10"},{"f":"Changcai","l":"Wang","t":"10"},{"f":"Aijin","l":"Xue","t":"10"},{"f":"Tianhui","l":"Fan","t":"11"},{"f":"Li","l":"Geng","t":"11"},{"f":"Ena","l":"Liao","t":"11"},{"f":"Hong","l":"Lu","t":"11"},{"f":"Sophia","l":"Lu","t":"11"},{"f":"Ding","l":"Xie","t":"11"},{"f":"Angela","l":"Yang","t":"11"},{"f":"Pei","l":"Yang","t":"11"},{"f":"Sylina","l":"Yao","t":"11"},{"f":"Wei","l":"Zhang","t":"11"},{"f":"Wen","l":"Chen","t":"12"},{"f":"Julia","l":"Hao","t":"12"},{"f":"Xinyan","l":"Huang","t":"12"},{"f":"Yongjiang","l":"Liu","t":"12"},{"f":"Joseph","l":"Wang","t":"12"},{"f":"Judy","l":"Wang","t":"12"},{"f":"Timothy","l":"Wang","t":"12"},{"f":"Yitong","l":"Wang","t":"12"},{"f":"James","l":"Yu","t":"12"},{"f":"Hui","l":"Zhang","t":"12"},{"f":"Daniel","l":"Chen","t":"13"},{"f":"Guang","l":"Chen","t":"13"},{"f":"Jun","l":"Chen","t":"13"},{"f":"Zheng Hao","l":"Chen","t":"13"},{"f":"Xueying","l":"He","t":"13"},{"f":"Yu","l":"Li","t":"13"},{"f":"Yingning","l":"Pang","t":"13"},{"f":"Guming","l":"Xu","t":"13"},{"f":"Hongcheng","l":"Xu","t":"13"},{"f":"Zhu","l":"Yan","t":"13"},{"f":"Evan","l":"Li","t":"14"},{"f":"James","l":"Li","t":"14"},{"f":"Yulian","l":"Li","t":"14"},{"f":"Rui Xia","l":"Liu","t":"14"},{"f":"Xue","l":"Liu","t":"14"},{"f":"Jie","l":"Sui","t":"14"},{"f":"Lizhen","l":"Wang","t":"14"},{"f":"Peng","l":"Yang","t":"14"},{"f":"Shengcai","l":"Zhang","t":"14"},{"f":"Qian","l":"Zhao","t":"14"},{"f":"Renhang","l":"Cai","t":"15"},{"f":"Mujin","l":"Chen","t":"15"},{"f":"Rui Jin","l":"Chen","t":"15"},{"f":"Jinping","l":"Dong","t":"15"},{"f":"Liangcan","l":"Dong","t":"15"},{"f":"Xiangyang","l":"Lai","t":"15"},{"f":"Haidi","l":"Liu","t":"15"},{"f":"Meijin","l":"Liu","t":"15"},{"f":"Tianlong","l":"Xu","t":"15"},{"f":"Zhuoxian","l":"Zhang","t":"15"},{"f":"Zhuola","l":"Bai","t":"16"},{"f":"Tracy (Hong)","l":"Cui","t":"16"},{"f":"Yiran","l":"Feng","t":"16"},{"f":"Haijuan","l":"Han","t":"16"},{"f":"Xiao","l":"Liang","t":"16"},{"f":"Leqi","l":"Liu","t":"16"},{"f":"Yingying","l":"Liu","t":"16"},{"f":"Rui","l":"Wang","t":"16"},{"f":"Tianen","l":"Wang","t":"16"},{"f":"Bai Sui","l":"Zhao","t":"16"},{"f":"Chang Liu","l":"Gao","t":"17"},{"f":"Min Qin","l":"Lin","t":"17"},{"f":"Huaqing","l":"Wang","t":"17"},{"f":"Zehui","l":"Wang","t":"17"},{"f":"Zhaomin","l":"Wei","t":"17"},{"f":"Yuhan","l":"Wu","t":"17"},{"f":"Wen Cheng","l":"Xie","t":"17"},{"f":"Xin Wu","l":"Yang","t":"17"},{"f":"Yexiang","l":"Zhang","t":"17"},{"f":"Yin","l":"Zhou","t":"17"},{"f":"Hong","l":"Gao","t":"18"},{"f":"Jing Duo","l":"Gao","t":"18"},{"f":"Jeffrey","l":"Li","t":"18"},{"f":"Jianrong","l":"Li","t":"18"},{"f":"Ying","l":"Lin","t":"18"},{"f":"Qing Rong","l":"Yang","t":"18"},{"f":"Yi Ai","l":"Yin","t":"18"},{"f":"Xiaojing","l":"Yuan","t":"18"},{"f":"Ji Yang","l":"Zhang","t":"18"},{"f":"Guo Qing","l":"Zheng","t":"18"},{"f":"Mei","l":"Chen","t":"19"},{"f":"Xing","l":"Huang","t":"19"},{"f":"Xiufeng","l":"Jiang","t":"19"},{"f":"Youping","l":"Li","t":"19"},{"f":"Wu Qing","l":"Lin","t":"19"},{"f":"Jianli","l":"Liu","t":"19"},{"f":"Yezhen","l":"Liu","t":"19"},{"f":"Naiwang","l":"Zhang","t":"19"},{"f":"Quan","l":"Zhang","t":"19"},{"f":"Aihua","l":"Cai","t":"20"},{"f":"Hengcai","l":"Chen","t":"20"},{"f":"Jin Wen","l":"Hu","t":"20"},{"f":"Zi Fan","l":"Liang","t":"20"},{"f":"Fujian","l":"Lin","t":"20"},{"f":"Shengsheng","l":"Liu","t":"20"},{"f":"Shiyue","l":"Liu","t":"20"},{"f":"Bao Meng","l":"Wang","t":"20"},{"f":"Lihong","l":"Zhang","t":"20"},{"f":"Meiying","l":"Zhao","t":"20"},{"f":"Roland","l":"Chu","t":"21"},{"f":"Xinying","l":"Fu","t":"21"},{"f":"Liping","l":"Jiang","t":"21"},{"f":"Xingzuo","l":"Li","t":"21"},{"f":"Hao","l":"Lin","t":"21"},{"f":"Wen","l":"Lin","t":"21"},{"f":"Haosheng","l":"Luo","t":"21"},{"f":"Hong Xia","l":"Wu","t":"21"},{"f":"Wen","l":"Zhang","t":"21"},{"f":"Xiaobing","l":"Zhong","t":"21"},{"f":"Christina","l":"Jiang","t":"22"},{"f":"Jianqing","l":"Jiang","t":"22"},{"f":"William","l":"Jiang","t":"22"},{"f":"Yanzi","l":"Jiang","t":"22"},{"f":"Fang","l":"Wang","t":"22"},{"f":"Qiang","l":"Wang","t":"22"},{"f":"Qiutang","l":"Wei","t":"22"},{"f":"Yemeng","l":"Wei","t":"22"},{"f":"BiNa","l":"Wu","t":"22"},{"f":"Dan","l":"Yu","t":"22"},{"f":"Grace","l":"He","t":"23"},{"f":"Lijiao","l":"He","t":"23"},{"f":"Qun","l":"He","t":"23"},{"f":"Tracy","l":"He","t":"23"},{"f":"Vincent","l":"He","t":"23"},{"f":"He","l":"Shi","t":"23"},{"f":"Kevin","l":"Wang","t":"23"},{"f":"Wei","l":"Wang","t":"23"},{"f":"Ming","l":"Ye","t":"23"},{"f":"Jing Yi","l":"He","t":"24"},{"f":"Song","l":"He","t":"24"},{"f":"Rui Fang","l":"Lin","t":"24"},{"f":"Daitong","l":"Liu","t":"24"},{"f":"Weihao","l":"Liu","t":"24"},{"f":"Weijie","l":"Liu","t":"24"},{"f":"Wendy","l":"Liu","t":"24"},{"f":"Huiqin","l":"Wu","t":"24"}];
+
+/* ---- Helpers ---- */
+function norm(s){
+  return (s||"").toString().toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"") // strip accents
+    .replace(/[().,]/g," ")
+    .replace(/\s+/g," ").trim();
+}
+// Precompute a search haystack for each guest
+GUESTS.forEach(g=>{
+  g.full = (g.f + " " + g.l).trim();
+  g._h = norm(g.f + " " + g.l + " " + g.l + " " + g.f);
+});
+
+const q = document.getElementById("q");
+const clearBtn = document.getElementById("clear");
+const results = document.getElementById("results");
+const overlay = document.getElementById("overlay");
+
+function search(query){
+  const nq = norm(query);
+  if(!nq) return [];
+  const tokens = nq.split(" ").filter(Boolean);
+  return GUESTS.filter(g => tokens.every(t => g._h.includes(t)));
+}
+
+function render(query){
+  clearBtn.style.display = query ? "block" : "none";
+  if(!query.trim()){
+    results.innerHTML = "";
+    return;
+  }
+  const matches = search(query);
+  if(matches.length === 0){
+    results.innerHTML =
+      '<div class="empty"><span class="big">&#128269;</span>' +
+      "No match found. Check the spelling, or try just your last name.<br>" +
+      '<span style="font-size:13px;color:#b5a890">未找到，请检查拼写或只输入姓氏</span></div>';
+    return;
+  }
+  // sort: matches whose name STARTS with the query first
+  const nq = norm(query);
+  matches.sort((a,b)=>{
+    const as = a._h.startsWith(nq)?0:1, bs = b._h.startsWith(nq)?0:1;
+    if(as!==bs) return as-bs;
+    return a.full.localeCompare(b.full);
+  });
+  results.innerHTML = matches.slice(0,40).map((g)=>{
+    const idx = GUESTS.indexOf(g);
+    return '<div class="guest" data-i="'+idx+'">'+
+        '<div class="name">'+esc(g.full)+'</div>'+
+        '<div class="badge"><span class="t">Table</span><span class="n">'+esc(g.t)+'</span></div>'+
+      '</div>';
+  }).join("");
+}
+
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+function showReveal(g){
+  document.getElementById("rName").textContent = g.full;
+  document.getElementById("rSub").textContent = g.l ? (g.f + " · " + g.l) : "";
+  document.getElementById("rNum").textContent = g.t;
+  overlay.classList.add("show");
+}
+function hideReveal(){ overlay.classList.remove("show"); }
+
+/* ---- Events ---- */
+q.addEventListener("input", e => render(e.target.value));
+clearBtn.addEventListener("click", () => { q.value=""; render(""); q.focus(); });
+results.addEventListener("click", e => {
+  const card = e.target.closest(".guest");
+  if(!card) return;
+  showReveal(GUESTS[+card.dataset.i]);
+});
+document.getElementById("close").addEventListener("click", hideReveal);
+overlay.addEventListener("click", e => { if(e.target===overlay) hideReveal(); });
+document.addEventListener("keydown", e => { if(e.key==="Escape") hideReveal(); });
+
+q.focus();
+</script>
+</body>
+</html>
