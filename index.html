@@ -173,6 +173,7 @@ function norm(s){
 GUESTS.forEach(g=>{
   g.full = (g.f + " " + g.l).trim();
   g._h = norm(g.f + " " + g.l + " " + g.l + " " + g.f);
+  g._hns = g._h.replace(/\s+/g,""); // same haystack with ALL spaces removed
 });
 
 const q = document.getElementById("q");
@@ -184,7 +185,11 @@ function search(query){
   const nq = norm(query);
   if(!nq) return [];
   const tokens = nq.split(" ").filter(Boolean);
-  return GUESTS.filter(g => tokens.every(t => g._h.includes(t)));
+  const nqns = nq.replace(/\s+/g,""); // query with all spaces removed
+  return GUESTS.filter(g =>
+    tokens.every(t => g._h.includes(t)) ||   // each typed word appears somewhere
+    g._hns.includes(nqns)                    // or it matches ignoring spaces entirely
+  );
 }
 
 function render(query){
