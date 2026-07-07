@@ -216,7 +216,7 @@ function render(query){
   results.innerHTML = matches.slice(0,40).map((g)=>{
     const idx = GUESTS.indexOf(g);
     return '<div class="guest" data-i="'+idx+'">'+
-        '<div class="name">'+esc(g.full)+(g.c?'<small>'+esc(g.c)+'</small>':'')+'</div>'+
+        '<div class="name">'+esc(g.full)+'</div>'+
         '<div class="badge"><span class="t">Table</span><span class="n">'+esc(g.t)+'</span></div>'+
       '</div>';
   }).join("");
@@ -226,7 +226,7 @@ function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">"
 
 function showReveal(g){
   document.getElementById("rName").textContent = g.full;
-  document.getElementById("rSub").textContent = g.c || "";
+  document.getElementById("rSub").textContent = g.l ? (g.f + " · " + g.l) : "";
   document.getElementById("rNum").textContent = g.t;
   overlay.classList.add("show");
 }
